@@ -9,7 +9,7 @@
 
 **A browser-based file workspace that bridges AI agents on your server with humans on any device.**
 
-[Quick Start](#quick-start) · [Agent API](#agent-api) · [Documentation](docs/) · [Changelog](CHANGELOG.md)
+[Quick Start](#quick-start) · [中文文档](README_CN.md) · [Agent API](#agent-api) · [Documentation](docs/) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -173,13 +173,8 @@ Tokens support granular permissions: `read`, `write`, `delete`.
 - **PDF & Word export** with custom signatures and themes (optional: `pip install weasyprint python-docx`)
 
 <p align="center">
-<img src="docs/assets/export-formats.png" width="32%" alt="Export formats">
-<img src="docs/assets/export-pdf.png" width="32%" alt="PDF export">
-<img src="docs/assets/export-word.png" width="32%" alt="Word export">
-</p>
-<p align="center">
-<img src="docs/assets/export-signature.png" width="48%" alt="Signature">
-<img src="docs/assets/export-custom-sig.png" width="48%" alt="Custom signature">
+<img src="docs/assets/export-pdf.png" width="48%" alt="PDF export">
+<img src="docs/assets/export-word.png" width="48%" alt="Word export">
 </p>
 
 ### For AI Workflows

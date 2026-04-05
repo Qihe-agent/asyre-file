@@ -396,7 +396,7 @@ LOGIN_HTML = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>登录 — 修荷 Editor</title>
+<title>Login — Asyre File</title>
 <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
 <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
 <style>
@@ -410,7 +410,7 @@ body{font-family:-apple-system,system-ui,'Segoe UI',sans-serif;min-height:100vh;
 
 <div class="text-center">
   <svg class="mx-auto mb-3 opacity-60" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-  <h2 class="text-xl font-bold text-primary">修荷 Editor</h2>
+  <h2 class="text-xl font-bold text-primary">Asyre File</h2>
   <p class="text-sm text-base-content/50 mt-1">请登录以继续</p>
 </div>
 
@@ -452,7 +452,7 @@ HTML_TEMPLATE = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📝 修荷 Editor</title>
+<title>Asyre File</title>
 <!-- DaisyUI + Tailwind CSS (CDN) -->
 <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
 <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
@@ -3613,7 +3613,7 @@ body{{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemF
         html = html.replace('__SHARE_BTN_DISPLAY__', mode_config.get('share_btn_display', ''))
         html = html.replace('__ANN_BTN_DISPLAY__', mode_config.get('ann_btn_display', ''))
         html = html.replace('__READONLY_BANNER__', mode_config.get('readonly_banner', ''))
-        html = html.replace('__EDITOR_TITLE__', mode_config.get('editor_title', '📝 修荷 Editor'))
+        html = html.replace('__EDITOR_TITLE__', mode_config.get('editor_title', 'Asyre File'))
         html = html.replace('__DEFAULT_VIEW__', mode_config.get('default_view', 'split'))
         html = html.replace('__AUTH_USER__', mode_config.get('auth_user', 'null'))
         html = html.replace('__THEME_BTN__', '<button class="theme-btn" onclick="toggleTheme()" title="\xe5\x88\x87\xe6\x8d\xa2\xe4\xb8\xbb\xe9\xa2\x98"><svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>')
@@ -3910,7 +3910,7 @@ body{{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemF
                     'is_readonly': 'true' if is_readonly else 'false',
                     'share_btn_display': 'style="display:none"',
                     'ann_btn_display': 'style="display:none"' if is_readonly else '',
-                    'readonly_banner': '<div class="readonly-banner">👁 只读模式 — 此文档由修荷团队分享</div>' if is_readonly else '<div class="readonly-banner" style="background:rgba(255,165,0,.1);border-color:var(--accent);color:var(--accent)">✏️ 可编辑模式 — 此文档由修荷团队分享</div>',
+                    'readonly_banner': '<div class="readonly-banner">👁 只读模式 — Shared via Asyre File</div>' if is_readonly else '<div class="readonly-banner" style="background:rgba(255,165,0,.1);border-color:var(--accent);color:var(--accent)">✏️ 可编辑模式 — Shared via Asyre File</div>',
                     'editor_title': '📄 ' + fname,
                     'default_view': 'preview-only' if is_readonly else 'split',
                 })

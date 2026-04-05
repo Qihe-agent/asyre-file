@@ -1,60 +1,102 @@
+<div align="center">
+
 # Asyre File
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/yzha0302/asyre-file)](https://github.com/yzha0302/asyre-file/releases)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-3776ab?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/yzha0302/asyre-file?style=flat-square&color=7c3aed)](https://github.com/yzha0302/asyre-file/releases)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ed?style=flat-square&logo=docker&logoColor=white)](Dockerfile)
 
 **A browser-based file workspace that bridges AI agents on your server with humans on any device.**
 
-## Why Asyre File?
+[Quick Start](#quick-start) · [Agent API](#agent-api) · [Documentation](docs/) · [Changelog](CHANGELOG.md)
 
-You're running AI agents (Claude, GPT, custom harnesses) on a remote server. They generate reports, draft documents, write code. But how do you:
+</div>
 
-- **See what the AI produced** without SSH-ing in?
-- **Give feedback** on a specific paragraph and have AI revise it?
-- **Share the output** with a client or teammate who has no server access?
+---
 
-Asyre File solves this. It runs on the same server as your AI agents, exposes a browser UI, and connects both sides:
+## The Problem
+
+You're running AI agents on a remote server — Claude, GPT, custom harnesses, autonomous coding tools. They generate files, write reports, draft documents. But:
+
+- **You can't see the output** without SSH-ing in and running `cat`
+- **You can't give feedback** on line 42 of a draft without copy-pasting into a chat
+- **Your client can't access** the server at all — you end up emailing files back and forth
+
+## The Solution
+
+Asyre File runs on the same server as your AI agents. It gives you a **browser UI** to view, edit, annotate, and share every file the agent touches — and a **REST API** for agents to read and write programmatically.
 
 ```
-                    Browser (any device)
-                         |
-           +-------------+-------------+
-           |                           |
-     Human reads/edits            Human annotates
-     files in the editor          specific lines
-           |                           |
-           v                           v
-    +------+------+            +-------+-------+
-    | Asyre File  |  REST API  |  Asyre File   |
-    |  (server)   |<---------->| Annotation +  |
-    +------+------+            |  AI Pipeline  |
-           ^                   +-------+-------+
-           |                           |
-     AI agents read/write        AI receives feedback
-     files via API               and revises the doc
-           |
-    +------+------+
-    | Your AI     |
-    | Agent       |
-    | (on server) |
-    +-------------+
+ ┌──────────────────┐          ┌──────────────────────────────┐
+ │  Your Browser    │          │  Your Server                 │
+ │  (any device)    │◄────────►│                              │
+ │                  │  HTTP    │  ┌────────────┐              │
+ │  • View files    │          │  │ Asyre File │◄──REST API──►│ AI Agent
+ │  • Edit & save   │          │  │ (port 8765)│              │ (Claude, GPT,
+ │  • Annotate      │          │  └────────────┘              │  custom, etc.)
+ │  • Share links   │          │       │                      │
+ └──────────────────┘          │       ▼                      │
+                               │  ~/data/  (shared files)     │
+ ┌──────────────────┐          │                              │
+ │  Your Client     │          └──────────────────────────────┘
+ │  (share link)    │
+ │  • View only     │
+ │  • Or editable   │
+ └──────────────────┘
 ```
 
-### The Workflow
+## How It Works
 
-1. **AI agent writes a file** via REST API (`PUT /api/v1/files/report.md`)
-2. **You open the browser**, see the file in the editor with live preview
-3. **You annotate**: select lines 12-18, write "too formal, make it conversational"
-4. **Copy annotations** to clipboard -- paste into your AI (Claude, GPT, or any harness)
-5. **AI revises**, you paste the result back or the agent writes via API
-6. **Share a link** with your client -- they see a read-only (or editable) view, no account needed
+<!-- TODO: Add GIF demo of the full workflow -->
+<!-- ![Demo](docs/assets/demo-workflow.gif) -->
 
-Annotations are also **saved to the server**, so your AI agent can read them via `GET /api/v1/files/annotations/` and process feedback automatically.
+### 1. AI writes a file → You see it instantly
 
-No SSH, no `scp`, no copy-paste. The browser IS the interface to your server's file system.
+Your agent creates or updates files via the REST API. Open the browser — the file tree updates in real-time.
+
+<!-- TODO: GIF showing file appearing in tree after API write -->
+<!-- ![Agent writes](docs/assets/demo-agent-write.gif) -->
+
+### 2. You annotate specific lines → Copy to your AI
+
+Select lines, write feedback like "too formal, rewrite conversationally". Click **Copy** — the annotation includes the **full server path** so any AI can find the file.
+
+<!-- TODO: GIF showing annotation workflow -->
+<!-- ![Annotate](docs/assets/demo-annotate.gif) -->
+
+**What gets copied:**
+```markdown
+# Annotation: /home/ubuntu/data/report.md
+
+Date: 2026-04-05T10:30:00Z
+By: Asher
+
+---
+**[1] Lines 12-18**
+  The quarterly results demonstrate a significant...
+Feedback: Too formal. Make it conversational, add specific numbers.
+```
+
+Paste this into Claude, GPT, or any AI — it knows exactly which file and which lines to fix.
+
+### 3. Batch annotate multiple files
+
+Select files with **Cmd+Click**, hit **Annotate**, write your feedback, then **Copy** or **Save**.
+
+<!-- TODO: GIF showing multi-select + batch annotate -->
+<!-- ![Batch annotate](docs/assets/demo-batch-annotate.gif) -->
+
+### 4. Share with anyone — no account needed
+
+Right-click a file → **Copy link**. Or share an entire folder. Recipients get a clean read-only (or editable) view.
+
+<!-- TODO: GIF showing share link creation -->
+<!-- ![Share](docs/assets/demo-share.gif) -->
 
 ## Quick Start
+
+### Option 1: Git Clone
 
 ```bash
 git clone https://github.com/yzha0302/asyre-file.git
@@ -62,96 +104,128 @@ cd asyre-file
 python3 server.py
 ```
 
-Visit `http://localhost:8765` -- the setup wizard creates your admin account and (optionally) an API token for your agents.
+Visit `http://localhost:8765` — the setup wizard creates your admin account.
 
-**Docker:**
+### Option 2: Docker
+
 ```bash
+git clone https://github.com/yzha0302/asyre-file.git
+cd asyre-file
 docker compose up -d
 ```
 
-**One-line install:**
+### Option 3: One-Line Install
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yzha0302/asyre-file/main/install.sh | bash
 ```
 
-## Core Features
+## Agent API
 
-### For Humans (Browser)
-
-- **Live Markdown editor** with syntax highlighting for 20+ languages
-- **Real-time preview** with Mermaid diagrams, code highlighting, math
-- **Annotation system** -- select any lines, write feedback, then:
-  - **Save** annotations to the server (your AI agent can read them via API)
-  - **Copy** formatted feedback to clipboard (paste into any AI chat)
-- **File management** -- tree view, drag-and-drop, upload, rename, multi-select, right-click context menu
-- **Share links** -- read-only or editable, single file or entire folder
-- **PDF & Word export** with custom signatures and themes
-- **Dark & light themes**
-
-### For AI Agents (REST API)
-
-Your AI agents interact with the same file system via a simple REST API:
+Give your AI agent an API token during setup, then it can read and write files:
 
 ```bash
-# List files
-curl -H "Authorization: Bearer asf_xxx" http://your-server:8765/api/v1/files
+# Write a file
+curl -X PUT -H "Authorization: Bearer asf_your_token" \
+  -H "Content-Type: application/json" \
+  -d '{"content": "# Weekly Report\n\nGenerated by agent."}' \
+  http://your-server:8765/api/v1/files/reports/week-14.md
 
 # Read a file
-curl -H "Authorization: Bearer asf_xxx" http://your-server:8765/api/v1/files/report.md
+curl -H "Authorization: Bearer asf_your_token" \
+  http://your-server:8765/api/v1/files/reports/week-14.md
 
-# Write a file
-curl -X PUT -H "Authorization: Bearer asf_xxx" \
-  -d '{"content": "# Report\n\nGenerated by AI agent."}' \
-  http://your-server:8765/api/v1/files/report.md
+# List all files
+curl -H "Authorization: Bearer asf_your_token" \
+  http://your-server:8765/api/v1/files
 
-# Search across all files
-curl -H "Authorization: Bearer asf_xxx" http://your-server:8765/api/v1/search?q=keyword
+# Search
+curl -H "Authorization: Bearer asf_your_token" \
+  http://your-server:8765/api/v1/search?q=quarterly
 
 # Delete (moves to trash)
-curl -X DELETE -H "Authorization: Bearer asf_xxx" \
-  http://your-server:8765/api/v1/files/old-draft.md
+curl -X DELETE -H "Authorization: Bearer asf_your_token" \
+  http://your-server:8765/api/v1/files/drafts/old.md
 ```
 
-Agents can also **read saved annotations** via `GET /api/v1/files/annotations/` to process human feedback programmatically.
+Tokens support granular permissions: `read`, `write`, `delete`.
 
-### For Teams (Multi-User)
+[Full API Reference →](docs/api.md)
 
-| Role | Can do |
-|------|--------|
-| **Admin** | Everything + user management + empty trash |
-| **Editor** | Read/write/upload/share within assigned paths |
-| **Viewer** | Read-only access to assigned paths |
+## Features
 
-Each user gets scoped access -- an editor assigned to `clients/acme/` can only see and edit files in that folder.
+### Editor
+- Live Markdown editor with **20+ language modes** (JS, Python, HTML, JSON, YAML, etc.)
+- Real-time preview with **Mermaid diagrams**, code highlighting, math
+- **Dark & light themes** — everything adapts, including Mermaid and CodeMirror
+
+<!-- TODO: Side-by-side screenshot of dark and light mode -->
+<!-- ![Themes](docs/assets/screenshot-themes.png) -->
+
+### File Management
+- **File tree** with colored icons per file type
+- **Drag-and-drop** to move files between folders
+- **Upload** via button, drag-and-drop onto page, or right-click "Upload here"
+- **Right-click menu**: Open, Rename, Copy path, Copy link, Download, Select, Delete
+- **Multi-select** with Cmd/Ctrl+Click → batch Share, Annotate, Copy, Delete
+- **Search** across all files
+- **Trash & restore** with admin-only empty
+
+<!-- TODO: GIF showing drag-drop + right-click menu -->
+<!-- ![File management](docs/assets/demo-file-mgmt.gif) -->
+
+### Collaboration
+- **Multi-user auth** — Admin / Editor / Viewer roles
+- **Path-based permissions** — scope each user to specific folders
+- **Share links** — read-only or editable, single file or entire folder
+- **PDF & Word export** with custom signatures and themes (optional: `pip install weasyprint python-docx`)
+
+### For AI Workflows
+- **Annotations** — select lines, write feedback, copy with full server paths
+- **Batch file annotations** — annotate multiple files at once
+- **REST API** with Bearer token auth for agents
+- **Activity log** — track all file changes (admin panel)
+- **Saved annotations** — persist to server, agents can read via API
+
+## Roles & Permissions
+
+| Action | Admin | Editor | Viewer |
+|--------|:-----:|:------:|:------:|
+| View files | All | Scoped | Scoped |
+| Edit / Save | ✓ | Scoped | — |
+| Create / Upload | ✓ | Scoped | — |
+| Move / Rename / Delete | ✓ | Scoped | — |
+| Share links | ✓ | Scoped | — |
+| Empty trash | ✓ | — | — |
+| User management | ✓ | — | — |
 
 ## Configuration
 
-Copy `config.example.json` to `config.json`, or use environment variables:
-
 ```bash
+# Environment variables (override config.json)
 ASF_SERVER_PORT=9000
 ASF_WORKSPACE_PATH=/path/to/files
 ASF_AI_ENABLED=true
 ASF_AI_APIKEY=sk-...
 ```
 
-See [docs/configuration.md](docs/configuration.md) for all options.
+Or copy `config.example.json` → `config.json`. See [docs/configuration.md](docs/configuration.md).
 
-## How It Works
+## Tech Stack
 
-Asyre File is a **single Python file** (`server.py`, ~5000 lines) with all HTML, CSS, and JavaScript inline. No build step, no Node.js, no npm. The only requirement is Python 3.8+.
-
-- **Backend**: Python stdlib `http.server` -- zero required dependencies
-- **Editor**: CodeMirror 5 (CDN)
-- **Preview**: marked.js + highlight.js + Mermaid (CDN)
-- **UI**: Tailwind CSS + DaisyUI (CDN) + custom components
-- **Export** (optional): `pip install weasyprint python-docx`
+| Layer | Technology | Notes |
+|-------|-----------|-------|
+| Backend | Python 3 stdlib | Zero required dependencies |
+| Editor | CodeMirror 5 | CDN, no build step |
+| Preview | marked.js + highlight.js + Mermaid | CDN |
+| UI | Tailwind CSS + custom components | CDN |
+| Architecture | Single-file server | All HTML/CSS/JS inline in `server.py` |
 
 ## Documentation
 
-- [API Reference](docs/api.md) -- full REST API documentation
-- [Configuration](docs/configuration.md) -- all config options
-- [Deployment](docs/deployment.md) -- Docker, Nginx, systemd, PM2
+- [API Reference](docs/api.md) — REST API for agents
+- [Configuration](docs/configuration.md) — all config options
+- [Deployment](docs/deployment.md) — Docker, Nginx, systemd, PM2
 
 ## License
 
@@ -159,4 +233,8 @@ Asyre File is a **single Python file** (`server.py`, ~5000 lines) with all HTML,
 
 ---
 
+<div align="center">
+
 Built by [Asyre](https://github.com/yzha0302) for humans who work with AI.
+
+</div>

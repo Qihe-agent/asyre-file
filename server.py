@@ -1087,6 +1087,7 @@ const FULL_MODE=__FULL_MODE__;
 const SHARE_FILE=__SHARE_FILE__;
 const IS_READONLY=__IS_READONLY__;
 const AUTH_USER=__AUTH_USER__;
+const WORKSPACE_ROOT='__WORKSPACE_ROOT__';
 
 // Mobile sidebar toggle
 function toggleMobileSidebar(){
@@ -1487,7 +1488,7 @@ function submitAnnotations(){
   
   const fileName=currentFile||'未知文件';
   const ts=new Date().toISOString();
-  let text='📌 标注反馈 — '+fileName+'\n时间: '+ts+'\n';
+  let text='# Annotation: '+WORKSPACE_ROOT+'/'+fileName+'\n\nDate: '+ts+'\nBy: '+(AUTH_USER?AUTH_USER.name:'anonymous')+'\n';
   
   annotations.forEach((ann,i)=>{
     let lines=[];
@@ -1497,7 +1498,7 @@ function submitAnnotations(){
     const ellipsis=lines.length>3?'...':'';
     
     text+='\n---\n【标注 '+(i+1)+'】第 '+(ann.startLine+1)+'-'+(ann.endLine+1)+' 行\n';
-    text+='> '+preview.split('\n').join('\n> ')+ellipsis+'\n';
+    text+='```\n'+preview+ellipsis+'\n```\n';
     text+='💬 '+ann.comment+'\n';
   });
   
@@ -2363,6 +2364,7 @@ function updateSelectionUI(){
       document.body.appendChild(bar);
     }
     bar.innerHTML='<span style="color:var(--blue);font-weight:600">'+_selectedFiles.size+' files</span>'
+      +'<button onclick="batchAnnotateSelected()" style="background:var(--purple);color:#fff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="8" x2="12" y2="14"/><line x1="9" y1="11" x2="15" y2="11"/></svg> Annotate</button>'
       +'<button onclick="batchShareSelected()" style="background:var(--blue);color:#000"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>'
       +'<button onclick="copySelectedPaths()" style="background:var(--border);color:var(--text)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy</button>'
       +'<button onclick="batchDeleteSelected()" style="background:var(--red);color:#fff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg> Delete</button>'
@@ -2404,6 +2406,65 @@ async function batchDeleteSelected(){
   showToast('Deleted '+ok+(fail?' ('+fail+' failed)':''));
   clearSelection();
   refreshTreeAndOpen(currentFile);
+}
+
+
+function batchAnnotateSelected(){
+  const paths=Array.from(_selectedFiles);
+  if(!paths.length)return;
+  const fileList=paths.map(p=>'<div style="font-size:12px;padding:2px 4px;color:var(--text);font-family:monospace">'+p+'</div>').join('');
+  openModal('batchAnnotateModal',`
+    <h3 style="margin:0 0 12px;font-size:15px">Annotate ${paths.length} files</h3>
+    <div style="max-height:120px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:12px">${fileList}</div>
+    <textarea id="batchAnnText" class="xh-input" placeholder="Write your annotation / feedback for these files..." style="width:100%;min-height:100px;resize:vertical;font-size:13px"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button class="xh-btn xh-btn-ghost" onclick="closeModal('batchAnnotateModal')">Cancel</button>
+      <button class="xh-btn" onclick="doBatchAnnotateSave()" style="background:var(--border);color:var(--text)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Save</button>
+      <button class="xh-btn xh-btn-primary" onclick="doBatchAnnotateCopy()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy</button>
+    </div>
+  `,{wide:true});
+  setTimeout(()=>document.getElementById('batchAnnText')?.focus(),50);
+}
+
+function _buildBatchAnnotationText(){
+  const paths=Array.from(_selectedFiles);
+  const comment=document.getElementById('batchAnnText')?.value?.trim()||'';
+  if(!comment)return null;
+  const root=WORKSPACE_ROOT.endsWith('/')?WORKSPACE_ROOT:WORKSPACE_ROOT+'/';
+  let text='# File Annotation\n\n';
+  text+='**Server:** `'+root+'`\n';
+  text+='**Date:** '+new Date().toISOString()+'\n';
+  text+='**By:** '+(AUTH_USER?AUTH_USER.name:'anonymous')+'\n\n';
+  text+='## Files ('+paths.length+')\n\n';
+  paths.forEach(p=>{text+='- `'+root+p+'`\n';});
+  text+='\n## Feedback\n\n'+comment+'\n';
+  return text;
+}
+
+function doBatchAnnotateCopy(){
+  const text=_buildBatchAnnotationText();
+  if(!text){showToast('Write something first','var(--accent)');return;}
+  copyText(text,'Annotation copied');
+  closeModal('batchAnnotateModal');
+}
+
+async function doBatchAnnotateSave(){
+  const comment=document.getElementById('batchAnnText')?.value?.trim();
+  if(!comment){showToast('Write something first','var(--accent)');return;}
+  const paths=Array.from(_selectedFiles);
+  const data={
+    type:'batch',
+    files:paths,
+    timestamp:new Date().toISOString(),
+    user:AUTH_USER?AUTH_USER.name:'anonymous',
+    comment:comment
+  };
+  try{
+    const r=await fetch(api('api/annotations'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const d=await r.json();
+    if(d.ok){showToast('Annotation saved');}
+    else{showToast(d.error||'Save failed','var(--red)');}
+  }catch(e){showToast('Save failed','var(--red)');}
 }
 
 function batchShareSelected(){
@@ -3548,6 +3609,7 @@ body{{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemF
         html = html.replace('__SAVE_DISPLAY__', mode_config.get('save_display', ''))
         html = html.replace('__EMPTY_MSG__', mode_config.get('empty_msg', ''))
         html = html.replace('__IS_READONLY__', mode_config.get('is_readonly', 'false'))
+        html = html.replace('__WORKSPACE_ROOT__', WORKSPACE)
         html = html.replace('__SHARE_BTN_DISPLAY__', mode_config.get('share_btn_display', ''))
         html = html.replace('__ANN_BTN_DISPLAY__', mode_config.get('ann_btn_display', ''))
         html = html.replace('__READONLY_BANNER__', mode_config.get('readonly_banner', ''))
